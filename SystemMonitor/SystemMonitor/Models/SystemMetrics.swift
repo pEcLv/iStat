@@ -4,6 +4,10 @@ import Combine
 class SystemMonitorManager: ObservableObject {
     let cpuMonitor = CPUMonitor()
     let memoryMonitor = MemoryMonitor()
+    let networkMonitor = NetworkMonitor()
+    let diskMonitor = DiskMonitor()
+    let batteryMonitor = BatteryMonitor()
+    let sensorMonitor = SensorMonitor()
 
     var cancellables = Set<AnyCancellable>()
     private var timer: Timer?
@@ -24,5 +28,9 @@ class SystemMonitorManager: ObservableObject {
     private func updateAll() {
         cpuMonitor.update()
         memoryMonitor.update()
+        networkMonitor.update()
+        diskMonitor.update()
+        batteryMonitor.update()
+        sensorMonitor.update()
     }
 }

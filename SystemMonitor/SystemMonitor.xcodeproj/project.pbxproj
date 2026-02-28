@@ -12,6 +12,10 @@
 		A1000003 /* MonitorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000003; };
 		A1000005 /* CPUMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000005; };
 		A1000006 /* MemoryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000006; };
+		A1000007 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007; };
+		A1000008 /* DiskMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008; };
+		A1000009 /* BatteryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000009; };
+		A100000A /* SensorMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000A; };
 		A100000B /* SystemMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000B; };
 		A100000C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000C; };
 		A100000E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A200000E; };
@@ -23,6 +27,10 @@
 		A2000003 /* MonitorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorView.swift; sourceTree = "<group>"; };
 		A2000005 /* CPUMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUMonitor.swift; sourceTree = "<group>"; };
 		A2000006 /* MemoryMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMonitor.swift; sourceTree = "<group>"; };
+		A2000007 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		A2000008 /* DiskMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskMonitor.swift; sourceTree = "<group>"; };
+		A2000009 /* BatteryMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryMonitor.swift; sourceTree = "<group>"; };
+		A200000A /* SensorMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorMonitor.swift; sourceTree = "<group>"; };
 		A200000B /* SystemMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMetrics.swift; sourceTree = "<group>"; };
 		A200000C /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		A200000E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -85,6 +93,10 @@
 			children = (
 				A2000005 /* CPUMonitor.swift */,
 				A2000006 /* MemoryMonitor.swift */,
+				A2000007 /* NetworkMonitor.swift */,
+				A2000008 /* DiskMonitor.swift */,
+				A2000009 /* BatteryMonitor.swift */,
+				A200000A /* SensorMonitor.swift */,
 			);
 			path = Monitors;
 			sourceTree = "<group>";
@@ -187,6 +199,10 @@
 				A1000003 /* MonitorView.swift in Sources */,
 				A1000005 /* CPUMonitor.swift in Sources */,
 				A1000006 /* MemoryMonitor.swift in Sources */,
+				A1000007 /* NetworkMonitor.swift in Sources */,
+				A1000008 /* DiskMonitor.swift in Sources */,
+				A1000009 /* BatteryMonitor.swift in Sources */,
+				A100000A /* SensorMonitor.swift in Sources */,
 				A100000B /* SystemMetrics.swift in Sources */,
 				A100000C /* Extensions.swift in Sources */,
 			);
