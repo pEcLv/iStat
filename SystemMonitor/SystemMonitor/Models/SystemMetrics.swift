@@ -39,15 +39,11 @@ class SystemMonitorManager: ObservableObject {
     }
 
     private func updateAll() {
-        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
-            guard let self = self else { return }
-
-            self.cpuMonitor.update()
-            self.memoryMonitor.update()
-            self.networkMonitor.update()
-            self.diskMonitor.update()
-            self.batteryMonitor.update()
-            self.sensorMonitor.update()
-        }
+        cpuMonitor.update()
+        memoryMonitor.update()
+        networkMonitor.update()
+        diskMonitor.update()
+        batteryMonitor.update()
+        sensorMonitor.update()
     }
 }
