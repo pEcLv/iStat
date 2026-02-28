@@ -14,7 +14,7 @@ class NetworkMonitor: ObservableObject {
     private var previousUpload: UInt64 = 0
     private var lastUpdate = Date()
 
-    nonisolated func update() {
+    func update() {
         var ifaddr: UnsafeMutablePointer<ifaddrs>?
         guard getifaddrs(&ifaddr) == 0, let firstAddr = ifaddr else { return }
         defer { freeifaddrs(ifaddr) }
@@ -36,33 +36,23 @@ class NetworkMonitor: ObservableObject {
         }
 
         let now = Date()
-        let prevDown = previousDownload
-        let prevUp = previousUpload
-        let lastTime = lastUpdate
+        let interval = now.timeIntervalSince(lastUpdate)
 
+        if previousDownload > 0 && interval > 0 {
+            downloadSpeed = Double(currentDownload - previousDownload) / interval
+            uploadSpeed = Double(currentUpload - previousUpload) / interval
+        }
+
+        totalDownload = currentDownload
+        totalUpload = currentUpload
         previousDownload = currentDownload
         previousUpload = currentUpload
         lastUpdate = now
 
-        let interval = now.timeIntervalSince(lastTime)
-        var downSpeed: Double = 0
-        var upSpeed: Double = 0
-
-        if prevDown > 0 && interval > 0 {
-            downSpeed = Double(currentDownload - prevDown) / interval
-            upSpeed = Double(currentUpload - prevUp) / interval
-        }
-
-        Task { @MainActor in
-            self.totalDownload = currentDownload
-            self.totalUpload = currentUpload
-            self.downloadSpeed = downSpeed
-            self.uploadSpeed = upSpeed
-            self.downloadHistory.removeFirst()
-            self.downloadHistory.append(downSpeed)
-            self.uploadHistory.removeFirst()
-            self.uploadHistory.append(upSpeed)
-        }
+        downloadHistory.removeFirst()
+        downloadHistory.append(downloadSpeed)
+        uploadHistory.removeFirst()
+        uploadHistory.append(uploadSpeed)
     }
 
     static func formatSpeed(_ bytesPerSecond: Double) -> String {
