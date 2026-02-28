@@ -1,16 +1,19 @@
 import SwiftUI
 import Combine
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem!
     var popover: NSPopover!
     var settingsWindow: NSWindow?
-    var systemMonitor = SystemMonitorManager()
+    var systemMonitor: SystemMonitorManager!
     let themeManager = ThemeManager()
+    var cancellables = Set<AnyCancellable>()
 
     @AppStorage("menuBarStyle") private var menuBarStyle: MenuBarStyle = .cpuAndMemory
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        systemMonitor = SystemMonitorManager()
         setupMenuBar()
         systemMonitor.startMonitoring()
     }
@@ -48,7 +51,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         .sink { [weak self] cpu, mem, down, up in
             self?.updateMenuBarTitle(cpu: cpu, mem: mem, down: down, up: up)
         }
-        .store(in: &systemMonitor.cancellables)
+        .store(in: &cancellables)
     }
 
     private func updateMenuBarTitle(cpu: Double, mem: Double, down: Double, up: Double) {
