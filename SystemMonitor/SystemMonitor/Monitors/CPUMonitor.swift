@@ -6,6 +6,7 @@ class CPUMonitor: ObservableObject {
     @Published var userUsage: Double = 0
     @Published var systemUsage: Double = 0
     @Published var idleUsage: Double = 0
+    @Published var history: [Double] = Array(repeating: 0, count: 60)
 
     private var previousInfo: host_cpu_load_info?
 
@@ -38,6 +39,9 @@ class CPUMonitor: ObservableObject {
             systemUsage = (systemDiff / totalTicks) * 100
             idleUsage = (idleDiff / totalTicks) * 100
             usage = ((userDiff + systemDiff + niceDiff) / totalTicks) * 100
+
+            history.removeFirst()
+            history.append(usage)
         }
 
         previousInfo = cpuLoadInfo

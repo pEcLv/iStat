@@ -10,6 +10,7 @@
 		A1000001 /* SystemMonitorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001; };
 		A1000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000002; };
 		A1000003 /* MonitorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000003; };
+		A1000004 /* Charts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000004; };
 		A1000005 /* CPUMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000005; };
 		A1000006 /* MemoryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000006; };
 		A1000007 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007; };
@@ -18,6 +19,7 @@
 		A100000A /* SensorMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000A; };
 		A100000B /* SystemMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000B; };
 		A100000C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000C; };
+		A100000D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000D; };
 		A100000E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A200000E; };
 /* End PBXBuildFile section */
 
@@ -25,6 +27,7 @@
 		A2000001 /* SystemMonitorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitorApp.swift; sourceTree = "<group>"; };
 		A2000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A2000003 /* MonitorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorView.swift; sourceTree = "<group>"; };
+		A2000004 /* Charts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Charts.swift; sourceTree = "<group>"; };
 		A2000005 /* CPUMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUMonitor.swift; sourceTree = "<group>"; };
 		A2000006 /* MemoryMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMonitor.swift; sourceTree = "<group>"; };
 		A2000007 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
@@ -33,6 +36,7 @@
 		A200000A /* SensorMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorMonitor.swift; sourceTree = "<group>"; };
 		A200000B /* SystemMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMetrics.swift; sourceTree = "<group>"; };
 		A200000C /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		A200000D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		A200000E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A200000F /* SystemMonitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SystemMonitor.entitlements; sourceTree = "<group>"; };
 		A3000001 /* SystemMonitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SystemMonitor.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -113,6 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				A2000003 /* MonitorView.swift */,
+				A2000004 /* Charts.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -121,6 +126,7 @@
 			isa = PBXGroup;
 			children = (
 				A200000C /* Extensions.swift */,
+				A200000D /* Theme.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -197,6 +203,7 @@
 				A1000001 /* SystemMonitorApp.swift in Sources */,
 				A1000002 /* AppDelegate.swift in Sources */,
 				A1000003 /* MonitorView.swift in Sources */,
+				A1000004 /* Charts.swift in Sources */,
 				A1000005 /* CPUMonitor.swift in Sources */,
 				A1000006 /* MemoryMonitor.swift in Sources */,
 				A1000007 /* NetworkMonitor.swift in Sources */,
@@ -205,6 +212,7 @@
 				A100000A /* SensorMonitor.swift in Sources */,
 				A100000B /* SystemMetrics.swift in Sources */,
 				A100000C /* Extensions.swift in Sources */,
+				A100000D /* Theme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -10,6 +10,7 @@ class MemoryMonitor: ObservableObject {
     @Published var wiredMemory: UInt64 = 0
     @Published var compressedMemory: UInt64 = 0
     @Published var usagePercent: Double = 0
+    @Published var history: [Double] = Array(repeating: 0, count: 60)
 
     func update() {
         totalMemory = ProcessInfo.processInfo.physicalMemory
@@ -35,5 +36,8 @@ class MemoryMonitor: ObservableObject {
 
         usedMemory = activeMemory + wiredMemory + compressedMemory
         usagePercent = Double(usedMemory) / Double(totalMemory) * 100
+
+        history.removeFirst()
+        history.append(usagePercent)
     }
 }

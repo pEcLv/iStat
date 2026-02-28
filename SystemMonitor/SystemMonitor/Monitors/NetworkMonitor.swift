@@ -6,6 +6,8 @@ class NetworkMonitor: ObservableObject {
     @Published var uploadSpeed: Double = 0
     @Published var totalDownload: UInt64 = 0
     @Published var totalUpload: UInt64 = 0
+    @Published var downloadHistory: [Double] = Array(repeating: 0, count: 60)
+    @Published var uploadHistory: [Double] = Array(repeating: 0, count: 60)
 
     private var previousDownload: UInt64 = 0
     private var previousUpload: UInt64 = 0
@@ -41,6 +43,11 @@ class NetworkMonitor: ObservableObject {
         if previousDownload > 0 && interval > 0 {
             downloadSpeed = Double(currentDownload - previousDownload) / interval
             uploadSpeed = Double(currentUpload - previousUpload) / interval
+
+            downloadHistory.removeFirst()
+            downloadHistory.append(downloadSpeed)
+            uploadHistory.removeFirst()
+            uploadHistory.append(uploadSpeed)
         }
 
         previousDownload = currentDownload
