@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem!
@@ -14,25 +15,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem.button {
-            button.title = "CPU: --%"
+            button.title = "⏳"
             button.action = #selector(togglePopover)
             button.target = self
         }
 
         popover = NSPopover()
-        popover.contentSize = NSSize(width: 320, height: 400)
+        popover.contentSize = NSSize(width: 280, height: 260)
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(
             rootView: MonitorView().environmentObject(systemMonitor)
         )
 
-        // 监听 CPU 使用率更新菜单栏
-        systemMonitor.cpuMonitor.$usage
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] usage in
-                self?.statusItem.button?.title = String(format: "CPU: %.0f%%", usage)
-            }
-            .store(in: &systemMonitor.cancellables)
+        // 监听 CPU 和内存使用率更新菜单栏
+        Publishers.CombineLatest(
+            systemMonitor.cpuMonitor.$usage,
+            systemMonitor.memoryMonitor.$usagePercent
+        )
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] cpu, mem in
+            self?.statusItem.button?.title = String(format: "CPU %.0f%% | MEM %.0f%%", cpu, mem)
+        }
+        .store(in: &systemMonitor.cancellables)
     }
 
     @objc func togglePopover() {
