@@ -3,22 +3,39 @@ import SwiftUI
 struct MonitorView: View {
     @EnvironmentObject var monitor: SystemMonitorManager
     @StateObject private var theme = ThemeManager()
+    @AppStorage("showCPU") private var showCPU = true
+    @AppStorage("showMemory") private var showMemory = true
+    @AppStorage("showNetwork") private var showNetwork = true
+    @AppStorage("showDisk") private var showDisk = true
+    @AppStorage("showBattery") private var showBattery = true
+    @AppStorage("showSensors") private var showSensors = true
 
     var body: some View {
         ScrollView {
             VStack(spacing: 8) {
-                CPUSection(monitor: monitor.cpuMonitor)
-                MemorySection(monitor: monitor.memoryMonitor)
-                NetworkSection(monitor: monitor.networkMonitor)
-                DiskSection(monitor: monitor.diskMonitor)
-                BatterySection(monitor: monitor.batteryMonitor)
-                SensorSection(monitor: monitor.sensorMonitor)
+                if showCPU { CPUSection(monitor: monitor.cpuMonitor) }
+                if showMemory { MemorySection(monitor: monitor.memoryMonitor) }
+                if showNetwork { NetworkSection(monitor: monitor.networkMonitor) }
+                if showDisk { DiskSection(monitor: monitor.diskMonitor) }
+                if showBattery { BatterySection(monitor: monitor.batteryMonitor) }
+                if showSensors { SensorSection(monitor: monitor.sensorMonitor) }
                 FooterView(theme: theme)
             }
             .padding(10)
         }
-        .frame(width: 300, height: 480)
+        .frame(width: 300, height: calculatedHeight)
         .preferredColorScheme(theme.colorScheme)
+    }
+
+    private var calculatedHeight: CGFloat {
+        var height: CGFloat = 60 // footer + padding
+        if showCPU { height += 110 }
+        if showMemory { height += 110 }
+        if showNetwork { height += 80 }
+        if showDisk { height += 70 + CGFloat(monitor.diskMonitor.disks.count * 50) }
+        if showBattery && monitor.batteryMonitor.isPresent { height += 70 }
+        if showSensors && (monitor.sensorMonitor.cpuTemperature > 0 || !monitor.sensorMonitor.fanSpeeds.isEmpty) { height += 80 }
+        return min(max(height, 200), 520)
     }
 }
 

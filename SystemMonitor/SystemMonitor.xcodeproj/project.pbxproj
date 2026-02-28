@@ -11,6 +11,7 @@
 		A1000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000002; };
 		A1000003 /* MonitorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000003; };
 		A1000004 /* Charts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000004; };
+		A10000F1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000F1; };
 		A1000005 /* CPUMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000005; };
 		A1000006 /* MemoryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000006; };
 		A1000007 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007; };
@@ -28,6 +29,7 @@
 		A2000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A2000003 /* MonitorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorView.swift; sourceTree = "<group>"; };
 		A2000004 /* Charts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Charts.swift; sourceTree = "<group>"; };
+		A20000F1 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A2000005 /* CPUMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUMonitor.swift; sourceTree = "<group>"; };
 		A2000006 /* MemoryMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMonitor.swift; sourceTree = "<group>"; };
 		A2000007 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
@@ -118,6 +120,7 @@
 			children = (
 				A2000003 /* MonitorView.swift */,
 				A2000004 /* Charts.swift */,
+				A20000F1 /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -204,6 +207,7 @@
 				A1000002 /* AppDelegate.swift in Sources */,
 				A1000003 /* MonitorView.swift in Sources */,
 				A1000004 /* Charts.swift in Sources */,
+				A10000F1 /* SettingsView.swift in Sources */,
 				A1000005 /* CPUMonitor.swift in Sources */,
 				A1000006 /* MemoryMonitor.swift in Sources */,
 				A1000007 /* NetworkMonitor.swift in Sources */,
