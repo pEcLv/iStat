@@ -74,120 +74,32 @@ struct LineChart: View {
     }
 }
 
-// MARK: - Animated Ring
-
-struct AnimatedRing: View {
-    let value: Double
-    let color: Color
-    let lineWidth: CGFloat
-    let showLabel: Bool
-
-    @State private var animatedValue: Double = 0
-
-    init(value: Double, color: Color, lineWidth: CGFloat = 5, showLabel: Bool = true) {
-        self.value = value
-        self.color = color
-        self.lineWidth = lineWidth
-        self.showLabel = showLabel
-    }
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(color.opacity(0.15), lineWidth: lineWidth)
-
-            Circle()
-                .trim(from: 0, to: animatedValue)
-                .stroke(
-                    AngularGradient(
-                        colors: [color.opacity(0.8), color],
-                        center: .center,
-                        startAngle: .degrees(0),
-                        endAngle: .degrees(360 * animatedValue)
-                    ),
-                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                )
-                .rotationEffect(.degrees(-90))
-
-            if showLabel {
-                Text(String(format: "%.0f", animatedValue * 100))
-                    .font(.system(size: lineWidth * 1.8, weight: .bold, design: .rounded))
-                    .foregroundColor(color)
-            }
-        }
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.8)) {
-                animatedValue = min(value, 1.0)
-            }
-        }
-        .onChange(of: value) { newValue in
-            withAnimation(.easeOut(duration: 0.3)) {
-                animatedValue = min(newValue, 1.0)
-            }
-        }
-    }
-}
-
-// MARK: - Bar Chart
-
-struct BarChart: View {
-    let values: [(String, Double, Color)]
-    let maxValue: Double
-
-    var body: some View {
-        HStack(alignment: .bottom, spacing: 4) {
-            ForEach(values.indices, id: \.self) { index in
-                let item = values[index]
-                VStack(spacing: 2) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(item.2)
-                        .frame(height: max(2, CGFloat(item.1 / maxValue) * 40))
-
-                    Text(item.0)
-                        .font(.system(size: 7))
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-    }
-}
-
 // MARK: - Speed Indicator
 
 struct SpeedIndicator: View {
     let download: Double
     let upload: Double
 
-    @State private var downloadAnim: Double = 0
-    @State private var uploadAnim: Double = 0
-
     var body: some View {
         HStack(spacing: 12) {
             speedItem(
                 icon: "arrow.down.circle.fill",
-                value: downloadAnim,
                 color: .networkDownColor,
                 label: formatSpeed(download)
             )
             speedItem(
                 icon: "arrow.up.circle.fill",
-                value: uploadAnim,
                 color: .networkUpColor,
                 label: formatSpeed(upload)
             )
         }
-        .onAppear { updateAnimations() }
-        .onChange(of: download) { _ in updateAnimations() }
-        .onChange(of: upload) { _ in updateAnimations() }
     }
 
-    private func speedItem(icon: String, value: Double, color: Color, label: String) -> some View {
+    private func speedItem(icon: String, color: Color, label: String) -> some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
                 .font(.caption)
                 .foregroundColor(color)
-                .scaleEffect(value > 0 ? 1.1 : 1.0)
-                .animation(.easeInOut(duration: 0.2), value: value)
 
             Text(label)
                 .font(.system(size: 11, weight: .medium, design: .monospaced))
@@ -195,45 +107,9 @@ struct SpeedIndicator: View {
         }
     }
 
-    private func updateAnimations() {
-        withAnimation(.easeOut(duration: 0.3)) {
-            downloadAnim = download
-            uploadAnim = upload
-        }
-    }
-
     private func formatSpeed(_ bps: Double) -> String {
         if bps < 1024 { return String(format: "%3.0f B/s", bps) }
         if bps < 1024 * 1024 { return String(format: "%5.1f KB/s", bps / 1024) }
         return String(format: "%5.2f MB/s", bps / 1024 / 1024)
-    }
-}
-
-// MARK: - Pulse Animation
-
-struct PulseEffect: ViewModifier {
-    let isActive: Bool
-    @State private var scale: CGFloat = 1.0
-
-    func body(content: Content) -> some View {
-        content
-            .scaleEffect(scale)
-            .onChange(of: isActive) { active in
-                if active {
-                    withAnimation(.easeInOut(duration: 0.3).repeatForever(autoreverses: true)) {
-                        scale = 1.1
-                    }
-                } else {
-                    withAnimation(.easeOut(duration: 0.2)) {
-                        scale = 1.0
-                    }
-                }
-            }
-    }
-}
-
-extension View {
-    func pulse(when active: Bool) -> some View {
-        modifier(PulseEffect(isActive: active))
     }
 }
