@@ -15,31 +15,51 @@ class BatteryMonitor: ObservableObject {
         guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
               let sources = IOPSCopyPowerSourcesList(snapshot)?.takeRetainedValue() as? [CFTypeRef],
               !sources.isEmpty else {
-            isPresent = false
+            DispatchQueue.main.async {
+                self.isPresent = false
+            }
             return
         }
 
-        for source in sources {
-            guard let info = IOPSGetPowerSourceDescription(snapshot, source)?.takeUnretainedValue() as? [String: Any] else {
+        var present = false
+        var charging = false
+        var capacity = 0
+        var max = 0
+        var healthPercent: Double = 0
+        var cycles = 0
+        var source = "Unknown"
+
+        for src in sources {
+            guard let info = IOPSGetPowerSourceDescription(snapshot, src)?.takeUnretainedValue() as? [String: Any] else {
                 continue
             }
 
-            isPresent = true
-            isCharging = info[kIOPSIsChargingKey] as? Bool ?? false
-            currentCapacity = info[kIOPSCurrentCapacityKey] as? Int ?? 0
+            present = true
+            charging = info[kIOPSIsChargingKey] as? Bool ?? false
+            capacity = info[kIOPSCurrentCapacityKey] as? Int ?? 0
 
-            if let max = info[kIOPSMaxCapacityKey] as? Int {
-                maxCapacity = max
+            if let m = info[kIOPSMaxCapacityKey] as? Int {
+                max = m
             }
-            if let design = info[kIOPSDesignCapacityKey] as? Int, design > 0, maxCapacity > 0 {
-                health = Double(maxCapacity) / Double(design) * 100
+            if let design = info[kIOPSDesignCapacityKey] as? Int, design > 0, max > 0 {
+                healthPercent = Double(max) / Double(design) * 100
             }
-            if let cycles = info["CycleCount"] as? Int {
-                cycleCount = cycles
+            if let c = info["CycleCount"] as? Int {
+                cycles = c
             }
-            if let source = info[kIOPSPowerSourceStateKey] as? String {
-                powerSource = source == kIOPSACPowerValue ? "AC Power" : "Battery"
+            if let s = info[kIOPSPowerSourceStateKey] as? String {
+                source = s == kIOPSACPowerValue ? "AC Power" : "Battery"
             }
+        }
+
+        DispatchQueue.main.async {
+            self.isPresent = present
+            self.isCharging = charging
+            self.currentCapacity = capacity
+            self.maxCapacity = max
+            self.health = healthPercent
+            self.cycleCount = cycles
+            self.powerSource = source
         }
     }
 }

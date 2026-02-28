@@ -16,9 +16,15 @@ class SensorMonitor: ObservableObject {
 
     func update() {
         openSMC()
-        cpuTemperature = readTemperature(key: "TC0P") ?? readTemperature(key: "TC0D") ?? 0
-        gpuTemperature = readTemperature(key: "TG0P") ?? readTemperature(key: "TG0D") ?? 0
-        updateFans()
+        let cpuTemp = readTemperature(key: "TC0P") ?? readTemperature(key: "TC0D") ?? 0
+        let gpuTemp = readTemperature(key: "TG0P") ?? readTemperature(key: "TG0D") ?? 0
+        let fans = readFans()
+
+        DispatchQueue.main.async {
+            self.cpuTemperature = cpuTemp
+            self.gpuTemperature = gpuTemp
+            self.fanSpeeds = fans
+        }
     }
 
     private func openSMC() {
@@ -51,8 +57,8 @@ class SensorMonitor: ObservableObject {
         return value > 0 && value < 150 ? value : nil
     }
 
-    private func updateFans() {
-        guard smcConnection != 0 else { return }
+    private func readFans() -> [FanInfo] {
+        guard smcConnection != 0 else { return [] }
         var fans: [FanInfo] = []
 
         for i in 0..<4 {
@@ -60,7 +66,7 @@ class SensorMonitor: ObservableObject {
                 fans.append(FanInfo(id: i, name: "Fan \(i)", rpm: rpm))
             }
         }
-        fanSpeeds = fans
+        return fans
     }
 
     private func readFanRPM(index: Int) -> Int? {

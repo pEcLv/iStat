@@ -34,25 +34,31 @@ class NetworkMonitor: ObservableObject {
             ptr = current.pointee.ifa_next
         }
 
-        totalDownload = currentDownload
-        totalUpload = currentUpload
-
         let now = Date()
         let interval = now.timeIntervalSince(lastUpdate)
 
-        if previousDownload > 0 && interval > 0 {
-            downloadSpeed = Double(currentDownload - previousDownload) / interval
-            uploadSpeed = Double(currentUpload - previousUpload) / interval
+        var downSpeed: Double = 0
+        var upSpeed: Double = 0
 
-            downloadHistory.removeFirst()
-            downloadHistory.append(downloadSpeed)
-            uploadHistory.removeFirst()
-            uploadHistory.append(uploadSpeed)
+        if previousDownload > 0 && interval > 0 {
+            downSpeed = Double(currentDownload - previousDownload) / interval
+            upSpeed = Double(currentUpload - previousUpload) / interval
         }
 
         previousDownload = currentDownload
         previousUpload = currentUpload
         lastUpdate = now
+
+        DispatchQueue.main.async {
+            self.totalDownload = currentDownload
+            self.totalUpload = currentUpload
+            self.downloadSpeed = downSpeed
+            self.uploadSpeed = upSpeed
+            self.downloadHistory.removeFirst()
+            self.downloadHistory.append(downSpeed)
+            self.uploadHistory.removeFirst()
+            self.uploadHistory.append(upSpeed)
+        }
     }
 
     static func formatSpeed(_ bytesPerSecond: Double) -> String {

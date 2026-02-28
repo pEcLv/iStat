@@ -40,7 +40,10 @@ class DiskMonitor: ObservableObject {
                 freeSpace: UInt64(free)
             ))
         }
-        disks = newDisks
+
+        DispatchQueue.main.async {
+            self.disks = newDisks
+        }
     }
 
     static func formatBytes(_ bytes: UInt64) -> String {

@@ -13,7 +13,7 @@ class MemoryMonitor: ObservableObject {
     @Published var history: [Double] = Array(repeating: 0, count: 60)
 
     func update() {
-        totalMemory = ProcessInfo.processInfo.physicalMemory
+        let total = ProcessInfo.processInfo.physicalMemory
 
         var stats = vm_statistics64()
         var count = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.stride / MemoryLayout<integer_t>.stride)
@@ -28,16 +28,25 @@ class MemoryMonitor: ObservableObject {
 
         let pageSize = UInt64(vm_kernel_page_size)
 
-        activeMemory = UInt64(stats.active_count) * pageSize
-        inactiveMemory = UInt64(stats.inactive_count) * pageSize
-        wiredMemory = UInt64(stats.wire_count) * pageSize
-        compressedMemory = UInt64(stats.compressor_page_count) * pageSize
-        freeMemory = UInt64(stats.free_count) * pageSize
+        let active = UInt64(stats.active_count) * pageSize
+        let inactive = UInt64(stats.inactive_count) * pageSize
+        let wired = UInt64(stats.wire_count) * pageSize
+        let compressed = UInt64(stats.compressor_page_count) * pageSize
+        let free = UInt64(stats.free_count) * pageSize
+        let used = active + wired + compressed
+        let percent = Double(used) / Double(total) * 100
 
-        usedMemory = activeMemory + wiredMemory + compressedMemory
-        usagePercent = Double(usedMemory) / Double(totalMemory) * 100
-
-        history.removeFirst()
-        history.append(usagePercent)
+        DispatchQueue.main.async {
+            self.totalMemory = total
+            self.activeMemory = active
+            self.inactiveMemory = inactive
+            self.wiredMemory = wired
+            self.compressedMemory = compressed
+            self.freeMemory = free
+            self.usedMemory = used
+            self.usagePercent = percent
+            self.history.removeFirst()
+            self.history.append(percent)
+        }
     }
 }
