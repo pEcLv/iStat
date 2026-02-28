@@ -23,8 +23,19 @@ struct MonitorView: View {
             }
             .padding(10)
         }
-        .frame(width: 300, height: 480)
+        .frame(width: 300, height: calculatedHeight)
         .preferredColorScheme(theme.colorScheme)
+    }
+
+    private var calculatedHeight: CGFloat {
+        var height: CGFloat = 60 // footer + padding
+        if showCPU { height += 110 }
+        if showMemory { height += 110 }
+        if showNetwork { height += 80 }
+        if showDisk { height += 70 + CGFloat(monitor.diskMonitor.disks.count * 50) }
+        if showBattery && monitor.batteryMonitor.isPresent { height += 70 }
+        if showSensors && (monitor.sensorMonitor.cpuTemperature > 0 || !monitor.sensorMonitor.fanSpeeds.isEmpty) { height += 80 }
+        return min(max(height, 200), 520)
     }
 }
 
@@ -39,13 +50,12 @@ struct CPUSection: View {
                 SectionHeader(title: "CPU", icon: "cpu", color: .cpuColor)
 
                 HStack(spacing: 12) {
-                    SmoothRing(value: monitor.usage / 100, color: .cpuColor)
+                    AnimatedRing(value: monitor.usage / 100, color: .cpuColor, lineWidth: 6)
                         .frame(width: 50, height: 50)
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(String(format: "%.1f%%", monitor.usage))
                             .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .contentTransition(.numericText())
 
                         HStack(spacing: 8) {
                             StatLabel(title: "User", value: String(format: "%.0f%%", monitor.userUsage), color: .cpuColor)
@@ -75,13 +85,12 @@ struct MemorySection: View {
                 SectionHeader(title: "Memory", icon: "memorychip", color: .memoryColor)
 
                 HStack(spacing: 12) {
-                    SmoothRing(value: monitor.usagePercent / 100, color: .memoryColor)
+                    AnimatedRing(value: monitor.usagePercent / 100, color: .memoryColor, lineWidth: 6)
                         .frame(width: 50, height: 50)
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(String(format: "%.1f%%", monitor.usagePercent))
                             .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .contentTransition(.numericText())
 
                         Text("\(formatBytes(monitor.usedMemory)) / \(formatBytes(monitor.totalMemory))")
                             .font(.caption)
@@ -175,7 +184,6 @@ struct DiskSection: View {
 
                 ForEach(monitor.disks) { disk in
                     DiskRow(disk: disk)
-                        .id(disk.mountPoint)
                 }
             }
         }
@@ -184,6 +192,7 @@ struct DiskSection: View {
 
 struct DiskRow: View {
     let disk: DiskMonitor.DiskInfo
+    @State private var animatedProgress: Double = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -204,7 +213,7 @@ struct DiskRow: View {
 
                     RoundedRectangle(cornerRadius: 3)
                         .fill(diskColor)
-                        .frame(width: geo.size.width * (disk.usagePercent / 100))
+                        .frame(width: geo.size.width * animatedProgress)
                 }
             }
             .frame(height: 6)
@@ -212,6 +221,16 @@ struct DiskRow: View {
             Text("\(DiskMonitor.formatBytes(disk.freeSpace)) free of \(DiskMonitor.formatBytes(disk.totalSpace))")
                 .font(.system(size: 9))
                 .foregroundColor(.secondary)
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.6)) {
+                animatedProgress = disk.usagePercent / 100
+            }
+        }
+        .onChange(of: disk.usagePercent) { newValue in
+            withAnimation(.easeOut(duration: 0.3)) {
+                animatedProgress = newValue / 100
+            }
         }
     }
 
@@ -234,7 +253,7 @@ struct BatterySection: View {
                     SectionHeader(title: "Battery", icon: "battery.100", color: .batteryColor)
 
                     HStack {
-                        BatteryIcon(level: monitor.currentCapacity, isCharging: monitor.isCharging)
+                        AnimatedBattery(level: monitor.currentCapacity, isCharging: monitor.isCharging)
                             .frame(width: 44, height: 22)
 
                         VStack(alignment: .leading, spacing: 2) {
@@ -246,6 +265,7 @@ struct BatterySection: View {
                                     Image(systemName: "bolt.fill")
                                         .foregroundColor(.yellow)
                                         .font(.caption)
+                                        .pulse(when: true)
                                 }
                             }
                             Text(monitor.powerSource)
@@ -280,9 +300,10 @@ struct BatterySection: View {
     }
 }
 
-struct BatteryIcon: View {
+struct AnimatedBattery: View {
     let level: Int
     let isCharging: Bool
+    @State private var animatedLevel: CGFloat = 0
 
     var body: some View {
         GeometryReader { geo in
@@ -292,13 +313,23 @@ struct BatteryIcon: View {
 
                 RoundedRectangle(cornerRadius: 3)
                     .fill(batteryColor)
-                    .frame(width: max(0, (geo.size.width - 6) * CGFloat(level) / 100))
+                    .frame(width: max(0, (geo.size.width - 6) * animatedLevel))
                     .padding(2)
 
                 Rectangle()
                     .fill(Color.primary.opacity(0.6))
                     .frame(width: 3, height: geo.size.height * 0.4)
                     .offset(x: geo.size.width - 1)
+            }
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.8)) {
+                animatedLevel = CGFloat(level) / 100
+            }
+        }
+        .onChange(of: level) { newValue in
+            withAnimation(.easeOut(duration: 0.3)) {
+                animatedLevel = CGFloat(newValue) / 100
             }
         }
     }
@@ -340,6 +371,7 @@ struct SensorSection: View {
                                 HStack(spacing: 4) {
                                     Image(systemName: "fan.fill")
                                         .font(.caption2)
+                                        .rotationEffect(.degrees(Double(fan.rpm) / 10))
                                     Text("\(fan.rpm) RPM")
                                         .font(.system(size: 10, design: .monospaced))
                                 }
@@ -434,32 +466,6 @@ struct StatLabel: View {
             Text("\(title) \(value)")
                 .font(.system(size: 9))
                 .foregroundColor(.secondary)
-        }
-    }
-}
-
-// MARK: - Smooth Ring (no animation on appear)
-
-struct SmoothRing: View {
-    let value: Double
-    let color: Color
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(color.opacity(0.15), lineWidth: 6)
-
-            Circle()
-                .trim(from: 0, to: min(value, 1.0))
-                .stroke(
-                    color,
-                    style: StrokeStyle(lineWidth: 6, lineCap: .round)
-                )
-                .rotationEffect(.degrees(-90))
-                .animation(.easeOut(duration: 0.3), value: value)
-
-            Text(String(format: "%.0f", value * 100))
-                .font(.system(size: 11, weight: .bold, design: .rounded))
         }
     }
 }
