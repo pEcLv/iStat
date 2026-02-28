@@ -11,13 +11,19 @@ class SystemMonitorManager: ObservableObject {
 
     var cancellables = Set<AnyCancellable>()
     private var timer: Timer?
+    @Published var refreshInterval: Double = 1.0 {
+        didSet { restartTimer() }
+    }
+
+    init() {
+        if let saved = UserDefaults.standard.object(forKey: "refreshInterval") as? Double {
+            refreshInterval = saved
+        }
+    }
 
     func startMonitoring() {
         updateAll()
-
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.updateAll()
-        }
+        restartTimer()
     }
 
     func stopMonitoring() {
@@ -25,12 +31,23 @@ class SystemMonitorManager: ObservableObject {
         timer = nil
     }
 
+    private func restartTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { [weak self] _ in
+            self?.updateAll()
+        }
+    }
+
     private func updateAll() {
-        cpuMonitor.update()
-        memoryMonitor.update()
-        networkMonitor.update()
-        diskMonitor.update()
-        batteryMonitor.update()
-        sensorMonitor.update()
+        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+            guard let self = self else { return }
+
+            self.cpuMonitor.update()
+            self.memoryMonitor.update()
+            self.networkMonitor.update()
+            self.diskMonitor.update()
+            self.batteryMonitor.update()
+            self.sensorMonitor.update()
+        }
     }
 }
