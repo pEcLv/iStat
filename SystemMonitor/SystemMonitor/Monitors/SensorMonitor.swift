@@ -1,6 +1,7 @@
 import Foundation
 import IOKit
 
+@MainActor
 class SensorMonitor: ObservableObject {
     @Published var cpuTemperature: Double = 0
     @Published var gpuTemperature: Double = 0
@@ -16,15 +17,9 @@ class SensorMonitor: ObservableObject {
 
     func update() {
         openSMC()
-        let cpuTemp = readTemperature(key: "TC0P") ?? readTemperature(key: "TC0D") ?? 0
-        let gpuTemp = readTemperature(key: "TG0P") ?? readTemperature(key: "TG0D") ?? 0
-        let fans = readFans()
-
-        DispatchQueue.main.async {
-            self.cpuTemperature = cpuTemp
-            self.gpuTemperature = gpuTemp
-            self.fanSpeeds = fans
-        }
+        cpuTemperature = readTemperature(key: "TC0P") ?? readTemperature(key: "TC0D") ?? 0
+        gpuTemperature = readTemperature(key: "TG0P") ?? readTemperature(key: "TG0D") ?? 0
+        fanSpeeds = readFans()
     }
 
     private func openSMC() {
@@ -52,7 +47,6 @@ class SensorMonitor: ObservableObject {
 
         guard result == kIOReturnSuccess else { return nil }
 
-        // sp78 格式: 有符号 16 位定点数，8 位整数 + 8 位小数
         let value = Double(Int16(outputStruct.bytes.0) << 8 | Int16(outputStruct.bytes.1)) / 256.0
         return value > 0 && value < 150 ? value : nil
     }
@@ -88,7 +82,6 @@ class SensorMonitor: ObservableObject {
 
         guard result == kIOReturnSuccess else { return nil }
 
-        // fpe2 格式
         let value = (Int(outputStruct.bytes.0) << 6) + (Int(outputStruct.bytes.1) >> 2)
         return value > 0 ? value : nil
     }

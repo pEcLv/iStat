@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 
+@MainActor
 class CPUMonitor: ObservableObject {
     @Published var usage: Double = 0
     @Published var userUsage: Double = 0
@@ -35,19 +36,13 @@ class CPUMonitor: ObservableObject {
         let totalTicks = userDiff + systemDiff + idleDiff + niceDiff
 
         if totalTicks > 0 {
-            let user = (userDiff / totalTicks) * 100
-            let system = (systemDiff / totalTicks) * 100
-            let idle = (idleDiff / totalTicks) * 100
-            let total = ((userDiff + systemDiff + niceDiff) / totalTicks) * 100
+            userUsage = (userDiff / totalTicks) * 100
+            systemUsage = (systemDiff / totalTicks) * 100
+            idleUsage = (idleDiff / totalTicks) * 100
+            usage = ((userDiff + systemDiff + niceDiff) / totalTicks) * 100
 
-            DispatchQueue.main.async {
-                self.userUsage = user
-                self.systemUsage = system
-                self.idleUsage = idle
-                self.usage = total
-                self.history.removeFirst()
-                self.history.append(total)
-            }
+            history.removeFirst()
+            history.append(usage)
         }
 
         previousInfo = cpuLoadInfo

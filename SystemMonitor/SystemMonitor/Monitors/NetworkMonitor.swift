@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 
+@MainActor
 class NetworkMonitor: ObservableObject {
     @Published var downloadSpeed: Double = 0
     @Published var uploadSpeed: Double = 0
@@ -13,7 +14,7 @@ class NetworkMonitor: ObservableObject {
     private var previousUpload: UInt64 = 0
     private var lastUpdate = Date()
 
-    func update() {
+    nonisolated func update() {
         var ifaddr: UnsafeMutablePointer<ifaddrs>?
         guard getifaddrs(&ifaddr) == 0, let firstAddr = ifaddr else { return }
         defer { freeifaddrs(ifaddr) }
@@ -35,21 +36,24 @@ class NetworkMonitor: ObservableObject {
         }
 
         let now = Date()
-        let interval = now.timeIntervalSince(lastUpdate)
-
-        var downSpeed: Double = 0
-        var upSpeed: Double = 0
-
-        if previousDownload > 0 && interval > 0 {
-            downSpeed = Double(currentDownload - previousDownload) / interval
-            upSpeed = Double(currentUpload - previousUpload) / interval
-        }
+        let prevDown = previousDownload
+        let prevUp = previousUpload
+        let lastTime = lastUpdate
 
         previousDownload = currentDownload
         previousUpload = currentUpload
         lastUpdate = now
 
-        DispatchQueue.main.async {
+        let interval = now.timeIntervalSince(lastTime)
+        var downSpeed: Double = 0
+        var upSpeed: Double = 0
+
+        if prevDown > 0 && interval > 0 {
+            downSpeed = Double(currentDownload - prevDown) / interval
+            upSpeed = Double(currentUpload - prevUp) / interval
+        }
+
+        Task { @MainActor in
             self.totalDownload = currentDownload
             self.totalUpload = currentUpload
             self.downloadSpeed = downSpeed

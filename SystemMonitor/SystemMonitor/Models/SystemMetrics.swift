@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 
+@MainActor
 class SystemMonitorManager: ObservableObject {
     let cpuMonitor = CPUMonitor()
     let memoryMonitor = MemoryMonitor()
@@ -34,7 +35,9 @@ class SystemMonitorManager: ObservableObject {
     private func restartTimer() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { [weak self] _ in
-            self?.updateAll()
+            Task { @MainActor in
+                self?.updateAll()
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 
+@MainActor
 class DiskMonitor: ObservableObject {
     @Published var disks: [DiskInfo] = []
 
@@ -41,9 +42,7 @@ class DiskMonitor: ObservableObject {
             ))
         }
 
-        DispatchQueue.main.async {
-            self.disks = newDisks
-        }
+        disks = newDisks
     }
 
     static func formatBytes(_ bytes: UInt64) -> String {
