@@ -82,13 +82,15 @@ struct AnimatedRing: View {
     let lineWidth: CGFloat
     let showLabel: Bool
 
-    @State private var animatedValue: Double = 0
-
     init(value: Double, color: Color, lineWidth: CGFloat = 5, showLabel: Bool = true) {
         self.value = value
         self.color = color
         self.lineWidth = lineWidth
         self.showLabel = showLabel
+    }
+
+    private var clampedValue: Double {
+        min(value, 1.0)
     }
 
     var body: some View {
@@ -97,32 +99,23 @@ struct AnimatedRing: View {
                 .stroke(color.opacity(0.15), lineWidth: lineWidth)
 
             Circle()
-                .trim(from: 0, to: animatedValue)
+                .trim(from: 0, to: clampedValue)
                 .stroke(
                     AngularGradient(
                         colors: [color.opacity(0.8), color],
                         center: .center,
                         startAngle: .degrees(0),
-                        endAngle: .degrees(360 * animatedValue)
+                        endAngle: .degrees(360 * clampedValue)
                     ),
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
+                .animation(.easeOut(duration: 0.3), value: clampedValue)
 
             if showLabel {
-                Text(String(format: "%.0f", animatedValue * 100))
+                Text(String(format: "%.0f", clampedValue * 100))
                     .font(.system(size: lineWidth * 1.8, weight: .bold, design: .rounded))
                     .foregroundColor(color)
-            }
-        }
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.8)) {
-                animatedValue = min(value, 1.0)
-            }
-        }
-        .onChange(of: value) { newValue in
-            withAnimation(.easeOut(duration: 0.3)) {
-                animatedValue = min(newValue, 1.0)
             }
         }
     }

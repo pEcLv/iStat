@@ -22,6 +22,8 @@
 		A100000C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000C; };
 		A100000D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000D; };
 		A100000E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A200000E; };
+		A1000010 /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000010; };
+		A1000011 /* TelemetryDeck in Frameworks */ = {isa = PBXBuildFile; productRef = A2000011; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +43,7 @@
 		A200000D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		A200000E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A200000F /* SystemMonitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SystemMonitor.entitlements; sourceTree = "<group>"; };
+		A2000010 /* Analytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
 		A3000001 /* SystemMonitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SystemMonitor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -49,6 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1000011 /* TelemetryDeck in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -130,6 +134,7 @@
 			children = (
 				A200000C /* Extensions.swift */,
 				A200000D /* Theme.swift */,
+				A2000010 /* Analytics.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -150,6 +155,9 @@
 			dependencies = (
 			);
 			name = SystemMonitor;
+			packageProductDependencies = (
+				A2000011 /* TelemetryDeck */,
+			);
 			productName = SystemMonitor;
 			productReference = A3000001 /* SystemMonitor.app */;
 			productType = "com.apple.product-type.application";
@@ -178,6 +186,9 @@
 				Base,
 			);
 			mainGroup = A5000001;
+			packageReferences = (
+				A2000012 /* XCRemoteSwiftPackageReference "SwiftClient" */,
+			);
 			productRefGroup = A5000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -217,6 +228,7 @@
 				A100000B /* SystemMetrics.swift in Sources */,
 				A100000C /* Extensions.swift in Sources */,
 				A100000D /* Theme.swift in Sources */,
+				A1000010 /* Analytics.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -417,6 +429,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A2000012 /* XCRemoteSwiftPackageReference "SwiftClient" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/TelemetryDeck/SwiftClient.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A2000011 /* TelemetryDeck */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A2000012 /* XCRemoteSwiftPackageReference "SwiftClient" */;
+			productName = TelemetryDeck;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A8000001 /* Project object */;
 }

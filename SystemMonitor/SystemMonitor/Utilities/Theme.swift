@@ -16,9 +16,19 @@ enum AppTheme: String, CaseIterable {
 }
 
 class ThemeManager: ObservableObject {
-    @AppStorage("appTheme") var currentTheme: AppTheme = .system
+    @Published var currentTheme: AppTheme {
+        didSet {
+            UserDefaults.standard.set(currentTheme.rawValue, forKey: "appTheme")
+            Analytics.trackThemeChanged(currentTheme.rawValue)
+        }
+    }
 
     var colorScheme: ColorScheme? { currentTheme.colorScheme }
+
+    init() {
+        let saved = UserDefaults.standard.string(forKey: "appTheme") ?? "system"
+        self.currentTheme = AppTheme(rawValue: saved) ?? .system
+    }
 }
 
 // MARK: - Colors

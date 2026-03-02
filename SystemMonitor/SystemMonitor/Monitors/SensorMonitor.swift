@@ -94,9 +94,10 @@ class SensorMonitor: ObservableObject {
         return result
     }
 
-    deinit {
+    func cleanup() {
         if smcConnection != 0 {
             IOServiceClose(smcConnection)
+            smcConnection = 0
         }
     }
 }

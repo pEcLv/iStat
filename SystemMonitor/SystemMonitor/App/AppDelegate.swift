@@ -13,28 +13,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @AppStorage("menuBarStyle") private var menuBarStyle: MenuBarStyle = .cpuAndMemory
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Analytics.initialize()
         systemMonitor = SystemMonitorManager()
         setupMenuBar()
         systemMonitor.startMonitoring()
     }
 
     private func setupMenuBar() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        // 使用固定宽度避免菜单栏按钮位置变化导致 popover 抖动
+        statusItem = NSStatusBar.system.statusItem(withLength: 90)
 
         if let button = statusItem.button {
             button.title = "⏳"
             button.action = #selector(handleClick)
             button.target = self
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            // 使用等宽字体确保数字宽度一致
+            button.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
         }
 
         popover = NSPopover()
         popover.contentSize = NSSize(width: 300, height: 480)
         popover.behavior = .transient
-        popover.animates = true
+        popover.animates = false
         popover.contentViewController = NSHostingController(
             rootView: MonitorView()
                 .environmentObject(systemMonitor)
+                .environmentObject(themeManager)
         )
 
         setupMenuBarUpdates()
@@ -59,23 +64,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         switch menuBarStyle {
         case .cpuOnly:
-            button.title = String(format: "CPU %.0f%%", cpu)
+            statusItem.length = 70
+            button.title = String(format: "CPU %3.0f%%", cpu)
         case .memoryOnly:
-            button.title = String(format: "MEM %.0f%%", mem)
+            statusItem.length = 75
+            button.title = String(format: "MEM %3.0f%%", mem)
         case .cpuAndMemory:
-            button.title = String(format: "%.0f%% | %.0f%%", cpu, mem)
+            statusItem.length = 90
+            button.title = String(format: "%3.0f%% | %3.0f%%", cpu, mem)
         case .networkSpeed:
+            statusItem.length = 140
             button.title = "↓\(formatSpeed(down)) ↑\(formatSpeed(up))"
         case .compact:
+            statusItem.length = 30
             button.title = ""
             button.image = NSImage(systemSymbolName: "cpu", accessibilityDescription: "System Monitor")
         }
     }
 
     private func formatSpeed(_ bps: Double) -> String {
-        if bps < 1024 { return String(format: "%.0fB", bps) }
-        if bps < 1024 * 1024 { return String(format: "%.0fK", bps / 1024) }
-        return String(format: "%.1fM", bps / 1024 / 1024)
+        // 固定宽度格式，避免文字宽度变化
+        if bps < 1024 { return String(format: "%4.0f B/s", bps) }
+        if bps < 1024 * 1024 { return String(format: "%5.1fK/s", bps / 1024) }
+        return String(format: "%5.1fM/s", bps / 1024 / 1024)
     }
 
     @objc func handleClick(sender: NSStatusBarButton) {
@@ -94,6 +105,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if popover.isShown {
             popover.performClose(nil)
         } else {
+            Analytics.trackPopoverOpened()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             NSApp.activate(ignoringOtherApps: true)
         }
@@ -133,10 +145,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func changeMenuBarStyle(_ sender: NSMenuItem) {
         if let style = sender.representedObject as? MenuBarStyle {
             menuBarStyle = style
+            Analytics.trackMenuBarStyleChanged(style.rawValue)
         }
     }
 
     @objc func openSettings() {
+        Analytics.trackSettingsOpened()
         if settingsWindow == nil {
             let settingsView = SettingsView(theme: themeManager)
             let hostingController = NSHostingController(rootView: settingsView)

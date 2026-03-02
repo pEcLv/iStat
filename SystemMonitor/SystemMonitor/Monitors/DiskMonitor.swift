@@ -6,7 +6,7 @@ class DiskMonitor: ObservableObject {
     @Published var disks: [DiskInfo] = []
 
     struct DiskInfo: Identifiable {
-        let id = UUID()
+        var id: String { mountPoint }
         let name: String
         let mountPoint: String
         let totalSpace: UInt64

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MonitorView: View {
     @EnvironmentObject var monitor: SystemMonitorManager
-    @StateObject private var theme = ThemeManager()
+    @EnvironmentObject var theme: ThemeManager
     @AppStorage("showCPU") private var showCPU = true
     @AppStorage("showMemory") private var showMemory = true
     @AppStorage("showNetwork") private var showNetwork = true
@@ -23,19 +23,8 @@ struct MonitorView: View {
             }
             .padding(10)
         }
-        .frame(width: 300, height: calculatedHeight)
+        .frame(width: 300, height: 480)
         .preferredColorScheme(theme.colorScheme)
-    }
-
-    private var calculatedHeight: CGFloat {
-        var height: CGFloat = 60 // footer + padding
-        if showCPU { height += 110 }
-        if showMemory { height += 110 }
-        if showNetwork { height += 80 }
-        if showDisk { height += 70 + CGFloat(monitor.diskMonitor.disks.count * 50) }
-        if showBattery && monitor.batteryMonitor.isPresent { height += 70 }
-        if showSensors && (monitor.sensorMonitor.cpuTemperature > 0 || !monitor.sensorMonitor.fanSpeeds.isEmpty) { height += 80 }
-        return min(max(height, 200), 520)
     }
 }
 
@@ -79,18 +68,26 @@ struct CPUSection: View {
 struct MemorySection: View {
     @ObservedObject var monitor: MemoryMonitor
 
+    private var pressureColor: Color {
+        if monitor.usagePercent > 85 { return .red }
+        if monitor.usagePercent > 70 { return .orange }
+        if monitor.usagePercent > 55 { return .yellow }
+        return .memoryColor
+    }
+
     var body: some View {
         SectionCard {
             VStack(alignment: .leading, spacing: 8) {
-                SectionHeader(title: "Memory", icon: "memorychip", color: .memoryColor)
+                SectionHeader(title: "Memory", icon: "memorychip", color: pressureColor)
 
                 HStack(spacing: 12) {
-                    AnimatedRing(value: monitor.usagePercent / 100, color: .memoryColor, lineWidth: 6)
+                    AnimatedRing(value: monitor.usagePercent / 100, color: pressureColor, lineWidth: 6)
                         .frame(width: 50, height: 50)
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(String(format: "%.1f%%", monitor.usagePercent))
                             .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundColor(pressureColor)
 
                         Text("\(formatBytes(monitor.usedMemory)) / \(formatBytes(monitor.totalMemory))")
                             .font(.caption)
@@ -102,7 +99,7 @@ struct MemorySection: View {
                     MemoryBreakdown(monitor: monitor)
                 }
 
-                LineChart(data: monitor.history, color: .memoryColor)
+                MemoryPressureChart(history: monitor.history, currentPressure: monitor.usagePercent)
                     .frame(height: 30)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
             }
@@ -111,6 +108,84 @@ struct MemorySection: View {
 
     private func formatBytes(_ bytes: UInt64) -> String {
         ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .memory)
+    }
+}
+
+struct MemoryPressureChart: View {
+    let history: [Double]
+    let currentPressure: Double
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                // 背景渐变表示压力区域
+                LinearGradient(
+                    colors: [Color.memoryColor.opacity(0.1), Color.yellow.opacity(0.1), Color.red.opacity(0.1)],
+                    startPoint: .bottom,
+                    endPoint: .top
+                )
+
+                // 压力线条
+                pressurePath(in: geo.size)
+                    .fill(pressureGradient)
+
+                // 顶部线条
+                pressureLinePath(in: geo.size)
+                    .stroke(pressureLineColor, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+            }
+        }
+    }
+
+    private var pressureLineColor: Color {
+        if currentPressure > 85 { return .red }
+        if currentPressure > 70 { return .orange }
+        if currentPressure > 55 { return .yellow }
+        return .memoryColor
+    }
+
+    private var pressureGradient: LinearGradient {
+        LinearGradient(
+            colors: [pressureLineColor.opacity(0.4), pressureLineColor.opacity(0.1)],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+
+    private func pressureLinePath(in size: CGSize) -> Path {
+        Path { path in
+            guard history.count > 1 else { return }
+            let step = size.width / CGFloat(history.count - 1)
+
+            for (index, value) in history.enumerated() {
+                let x = CGFloat(index) * step
+                let y = size.height - (CGFloat(value / 100) * size.height)
+                let point = CGPoint(x: x, y: min(max(y, 0), size.height))
+
+                if index == 0 {
+                    path.move(to: point)
+                } else {
+                    path.addLine(to: point)
+                }
+            }
+        }
+    }
+
+    private func pressurePath(in size: CGSize) -> Path {
+        Path { path in
+            guard history.count > 1 else { return }
+            let step = size.width / CGFloat(history.count - 1)
+
+            path.move(to: CGPoint(x: 0, y: size.height))
+
+            for (index, value) in history.enumerated() {
+                let x = CGFloat(index) * step
+                let y = size.height - (CGFloat(value / 100) * size.height)
+                path.addLine(to: CGPoint(x: x, y: min(max(y, 0), size.height)))
+            }
+
+            path.addLine(to: CGPoint(x: size.width, y: size.height))
+            path.closeSubpath()
+        }
     }
 }
 
@@ -192,7 +267,6 @@ struct DiskSection: View {
 
 struct DiskRow: View {
     let disk: DiskMonitor.DiskInfo
-    @State private var animatedProgress: Double = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -213,7 +287,7 @@ struct DiskRow: View {
 
                     RoundedRectangle(cornerRadius: 3)
                         .fill(diskColor)
-                        .frame(width: geo.size.width * animatedProgress)
+                        .frame(width: geo.size.width * (disk.usagePercent / 100))
                 }
             }
             .frame(height: 6)
@@ -221,16 +295,6 @@ struct DiskRow: View {
             Text("\(DiskMonitor.formatBytes(disk.freeSpace)) free of \(DiskMonitor.formatBytes(disk.totalSpace))")
                 .font(.system(size: 9))
                 .foregroundColor(.secondary)
-        }
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.6)) {
-                animatedProgress = disk.usagePercent / 100
-            }
-        }
-        .onChange(of: disk.usagePercent) { newValue in
-            withAnimation(.easeOut(duration: 0.3)) {
-                animatedProgress = newValue / 100
-            }
         }
     }
 
@@ -303,7 +367,6 @@ struct BatterySection: View {
 struct AnimatedBattery: View {
     let level: Int
     let isCharging: Bool
-    @State private var animatedLevel: CGFloat = 0
 
     var body: some View {
         GeometryReader { geo in
@@ -313,23 +376,13 @@ struct AnimatedBattery: View {
 
                 RoundedRectangle(cornerRadius: 3)
                     .fill(batteryColor)
-                    .frame(width: max(0, (geo.size.width - 6) * animatedLevel))
+                    .frame(width: max(0, (geo.size.width - 6) * CGFloat(level) / 100))
                     .padding(2)
 
                 Rectangle()
                     .fill(Color.primary.opacity(0.6))
                     .frame(width: 3, height: geo.size.height * 0.4)
                     .offset(x: geo.size.width - 1)
-            }
-        }
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.8)) {
-                animatedLevel = CGFloat(level) / 100
-            }
-        }
-        .onChange(of: level) { newValue in
-            withAnimation(.easeOut(duration: 0.3)) {
-                animatedLevel = CGFloat(newValue) / 100
             }
         }
     }
