@@ -8,7 +8,7 @@ struct MonitorView: View {
     @AppStorage("showNetwork") private var showNetwork = true
     @AppStorage("showDisk") private var showDisk = true
     @AppStorage("showBattery") private var showBattery = true
-    @AppStorage("showSensors") private var showSensors = true
+    @AppStorage("showSensors") private var showSensors = BuildConfig.supportsSensors
 
     var body: some View {
         ScrollView {
@@ -18,7 +18,7 @@ struct MonitorView: View {
                 if showNetwork { NetworkSection(monitor: monitor.networkMonitor) }
                 if showDisk { DiskSection(monitor: monitor.diskMonitor) }
                 if showBattery { BatterySection(monitor: monitor.batteryMonitor) }
-                if showSensors { SensorSection(monitor: monitor.sensorMonitor) }
+                if BuildConfig.supportsSensors && showSensors { SensorSection(monitor: monitor.sensorMonitor) }
                 FooterView(theme: theme)
             }
             .padding(10)
@@ -234,6 +234,10 @@ struct NetworkSection: View {
                 }
                 .frame(height: 30)
                 .clipShape(RoundedRectangle(cornerRadius: 4))
+
+                Text("Realtime throughput across active non-loopback interfaces")
+                    .font(.system(size: 9))
+                    .foregroundColor(.secondary)
             }
         }
     }
@@ -260,6 +264,10 @@ struct DiskSection: View {
                 ForEach(monitor.disks) { disk in
                     DiskRow(disk: disk)
                 }
+
+                Text("Usage = (Total - Available for Important Usage) / Total")
+                    .font(.system(size: 9))
+                    .foregroundColor(.secondary)
             }
         }
     }
@@ -292,7 +300,7 @@ struct DiskRow: View {
             }
             .frame(height: 6)
 
-            Text("\(DiskMonitor.formatBytes(disk.freeSpace)) free of \(DiskMonitor.formatBytes(disk.totalSpace))")
+            Text("\(DiskMonitor.formatBytes(disk.freeSpace)) available of \(DiskMonitor.formatBytes(disk.totalSpace))")
                 .font(.system(size: 9))
                 .foregroundColor(.secondary)
         }

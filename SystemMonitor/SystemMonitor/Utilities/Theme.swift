@@ -1,6 +1,12 @@
 import SwiftUI
 import Combine
 
+enum BuildConfig {
+    // App Store release: disable sensor collection that depends on non-sandbox SMC access.
+    static let isAppStoreBuild = true
+    static var supportsSensors: Bool { !isAppStoreBuild }
+}
+
 // MARK: - Theme
 
 enum AppTheme: String, CaseIterable {

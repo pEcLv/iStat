@@ -8,7 +8,7 @@ struct SettingsView: View {
     @AppStorage("showNetwork") private var showNetwork = true
     @AppStorage("showDisk") private var showDisk = true
     @AppStorage("showBattery") private var showBattery = true
-    @AppStorage("showSensors") private var showSensors = true
+    @AppStorage("showSensors") private var showSensors = BuildConfig.supportsSensors
     @AppStorage("menuBarStyle") private var menuBarStyle: MenuBarStyle = .cpuAndMemory
 
     var body: some View {
@@ -52,6 +52,10 @@ struct GeneralTab: View {
             }
             .pickerStyle(.segmented)
 
+            Text("Low Power Mode automatically doubles the sampling interval.")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+
             Picker("Menu Bar Display", selection: $menuBarStyle) {
                 ForEach(MenuBarStyle.allCases, id: \.self) { style in
                     Text(style.displayName).tag(style)
@@ -94,7 +98,9 @@ struct ModulesTab: View {
                 Toggle("Network", isOn: $showNetwork)
                 Toggle("Disk", isOn: $showDisk)
                 Toggle("Battery", isOn: $showBattery)
-                Toggle("Sensors", isOn: $showSensors)
+                if BuildConfig.supportsSensors {
+                    Toggle("Sensors", isOn: $showSensors)
+                }
             }
         }
         .padding()

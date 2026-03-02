@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import Darwin
 
 @MainActor
 class NetworkMonitor: ObservableObject {
@@ -24,13 +25,11 @@ class NetworkMonitor: ObservableObject {
 
         var ptr: UnsafeMutablePointer<ifaddrs>? = firstAddr
         while let current = ptr {
-            let name = String(cString: current.pointee.ifa_name)
-            if name.hasPrefix("en") || name.hasPrefix("lo") {
-                if let data = current.pointee.ifa_data {
-                    let networkData = data.assumingMemoryBound(to: if_data.self).pointee
-                    currentDownload += UInt64(networkData.ifi_ibytes)
-                    currentUpload += UInt64(networkData.ifi_obytes)
-                }
+            if shouldIncludeInterface(current.pointee),
+               let data = current.pointee.ifa_data {
+                let networkData = data.assumingMemoryBound(to: if_data.self).pointee
+                currentDownload += UInt64(networkData.ifi_ibytes)
+                currentUpload += UInt64(networkData.ifi_obytes)
             }
             ptr = current.pointee.ifa_next
         }
@@ -39,8 +38,10 @@ class NetworkMonitor: ObservableObject {
         let interval = now.timeIntervalSince(lastUpdate)
 
         if previousDownload > 0 && interval > 0 {
-            downloadSpeed = Double(currentDownload - previousDownload) / interval
-            uploadSpeed = Double(currentUpload - previousUpload) / interval
+            let downloadDelta = currentDownload >= previousDownload ? (currentDownload - previousDownload) : 0
+            let uploadDelta = currentUpload >= previousUpload ? (currentUpload - previousUpload) : 0
+            downloadSpeed = Double(downloadDelta) / interval
+            uploadSpeed = Double(uploadDelta) / interval
         }
 
         totalDownload = currentDownload
@@ -53,6 +54,16 @@ class NetworkMonitor: ObservableObject {
         downloadHistory.append(downloadSpeed)
         uploadHistory.removeFirst()
         uploadHistory.append(uploadSpeed)
+    }
+
+    private func shouldIncludeInterface(_ interface: ifaddrs) -> Bool {
+        guard let address = interface.ifa_addr else { return false }
+        guard address.pointee.sa_family == UInt8(AF_LINK) else { return false }
+
+        let flags = Int32(interface.ifa_flags)
+        let isUp = (flags & IFF_UP) != 0 && (flags & IFF_RUNNING) != 0
+        let isLoopback = (flags & IFF_LOOPBACK) != 0
+        return isUp && !isLoopback
     }
 
     static func formatSpeed(_ bytesPerSecond: Double) -> String {
